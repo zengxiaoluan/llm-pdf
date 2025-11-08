@@ -2,7 +2,6 @@ require("dotenv").config();
 const Koa = require("koa");
 const Router = require("koa-router");
 const { koaBody } = require("koa-body");
-const cors = require("koa-cors");
 const pdfParse = require("pdf-parse");
 const axios = require("axios");
 
@@ -14,7 +13,6 @@ const DEEPSEEK_API_URL = "https://api.deepseek.com/v1/chat/completions";
 const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
 
 // Middleware
-app.use(cors());
 app.use(
   koaBody({
     multipart: true,
@@ -89,15 +87,11 @@ router.get("/health", (ctx) => {
 });
 
 router.get("/", (ctx) => {
-  ctx.body = "Welcome to the PDF Analyzer Service!";
+  ctx.body = "<button>hello</button>";
 });
 
 app.use(router.routes());
 app.use(router.allowedMethods());
-
-app.use(async (ctx) => {
-  ctx.body = "Hello World";
-});
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
