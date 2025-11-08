@@ -13,6 +13,7 @@
     "koa": "^3.1.1",
     "koa-body": "^6.0.1",
     "koa-router": "^14.0.0",
+    "openai": "^6.8.1",
     "pdf-parse": "^1.1.1"
   },
   "devDependencies": {

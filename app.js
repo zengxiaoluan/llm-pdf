@@ -4,12 +4,15 @@ const Router = require("koa-router");
 const { koaBody } = require("koa-body");
 const pdfParse = require("pdf-parse");
 const axios = require("axios");
+const { readFile } = require("fs/promises");
+const path = require("path");
+const { testDeepseek } = require("./utils");
 
 const app = new Koa();
 const router = new Router();
 
 // DeepSeek API configuration
-const DEEPSEEK_API_URL = "https://api.deepseek.com/v1/chat/completions";
+const DEEPSEEK_API_URL = "https://api.deepseek.com";
 const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
 
 // Middleware
@@ -17,7 +20,7 @@ app.use(
   koaBody({
     multipart: true,
     formidable: {
-      maxFileSize: 10 * 1024 * 1024, // 10MB limit
+      maxFileSize: 100 * 1024 * 1024, // 10MB limit
     },
   })
 );
@@ -38,14 +41,15 @@ router.post("/analyze-pdf", async (ctx) => {
     const pdfText = pdfData.text;
 
     // Call DeepSeek API
-    const analysis = await analyzeWithDeepSeek(pdfText);
+    // const analysis = await analyzeWithDeepSeek(pdfText);
 
     ctx.body = {
       success: true,
       filename: file.originalFilename,
-      analysis: analysis,
+      analysis: pdfText,
     };
   } catch (error) {
+    console.log(error);
     ctx.status = 500;
     ctx.body = { error: error.message };
   }
@@ -86,8 +90,15 @@ router.get("/health", (ctx) => {
   ctx.body = { status: "OK", service: "PDF Analyzer" };
 });
 
-router.get("/", (ctx) => {
-  ctx.body = "<button>hello</button>";
+router.get("/", async (ctx) => {
+  ctx.type = "html";
+
+  let data = await readFile(
+    path.resolve(__dirname, "./client/index.html"),
+    "utf8"
+  );
+
+  ctx.body = data;
 });
 
 app.use(router.routes());
