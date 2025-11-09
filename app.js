@@ -6,7 +6,7 @@ const pdfParse = require("pdf-parse");
 const axios = require("axios");
 const { readFile } = require("fs/promises");
 const path = require("path");
-const { testDeepseek } = require("./utils");
+const { chatWithDeepseek } = require("./utils");
 
 const app = new Koa();
 const router = new Router();
@@ -99,6 +99,31 @@ router.get("/chat", async (ctx) => {
   );
 
   ctx.body = data;
+});
+
+router.post("/chat-api", async (ctx) => {
+  const { message } = ctx.request.body;
+
+  if (!message) {
+    ctx.status = 400;
+    ctx.body = { error: "No message provided" };
+    return;
+  }
+
+  console.log("Received message:", message);
+
+  try {
+    const response = await chatWithDeepseek(message);
+
+    ctx.body = {
+      response,
+      success: true,
+    };
+  } catch (error) {
+    console.error("Error communicating with DeepSeek API:", error);
+    ctx.status = 500;
+    ctx.body = { error: "Failed to get response from DeepSeek API" };
+  }
 });
 
 router.get("/", async (ctx) => {
