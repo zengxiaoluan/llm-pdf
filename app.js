@@ -90,6 +90,17 @@ router.get("/health", (ctx) => {
   ctx.body = { status: "OK", service: "PDF Analyzer" };
 });
 
+router.get("/chat", async (ctx) => {
+  ctx.type = "html";
+
+  let data = await readFile(
+    path.resolve(__dirname, "./client/chat.html"),
+    "utf8"
+  );
+
+  ctx.body = data;
+});
+
 router.get("/", async (ctx) => {
   ctx.type = "html";
 
