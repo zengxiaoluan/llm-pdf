@@ -84,6 +84,71 @@
     </div>
 
     <script>
+      function getListModels(apiKey) {
+        const url = "https://api.deepseek.com/models"; // Or the relevant DeepSeek endpoint
+
+        const headers = {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        };
+
+        fetch(url, {
+          method: "GET",
+          headers: headers,
+        })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+          })
+          .then((data) => {
+            console.log("Available Models:", data);
+          })
+          .catch((error) => {
+            console.error("Error fetching DeepSeek models:", error);
+          });
+      }
+
+      async function getDeepSeekCompletion(apiKey, messages) {
+        const url = "https://api.deepseek.com/chat/completions"; // Or the relevant DeepSeek endpoint
+
+        const headers = {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        };
+
+        const body = JSON.stringify({
+          model: "deepseek-chat", // Or the specific model you want to use
+          messages: messages,
+          // Add other parameters as needed, e.g., temperature, max_tokens
+        });
+
+        try {
+          const response = await fetch(url, {
+            method: "POST",
+            headers: headers,
+            body: body,
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const data = await response.json();
+          return data;
+        } catch (error) {
+          console.error("Error fetching DeepSeek API:", error);
+          return null;
+        }
+      }
+
+      // Example usage:
+      const myApiKey = "";
+      const conversation = [];
+
+      // getListModels(myApiKey);
+
       async function sendMessage() {
         const input = document.getElementById("messageInput");
         const message = input.value.trim();
@@ -93,6 +158,25 @@
         input.value = "";
 
         addMessage("assistant", "Thinking...", true);
+
+        conversation.push({ role: "user", content: message });
+
+        console.log("Sending conversation:", conversation);
+
+        getDeepSeekCompletion(myApiKey, conversation).then((data) => {
+          if (data && data.choices && data.choices.length > 0) {
+            console.log("DeepSeek Response:", data.choices[0].message.content);
+            removeLoadingMessage();
+
+            conversation.push({
+              role: "assistant",
+              content: data.choices[0].message.content,
+            });
+            addMessage("assistant", data.choices[0].message.content);
+          }
+        });
+
+        return;
 
         try {
           const response = await fetch("/chat-api", {
